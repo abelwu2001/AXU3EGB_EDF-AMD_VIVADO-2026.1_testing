@@ -40,6 +40,10 @@ El ventilador gira, pero no está bajo control automático de Linux: la salida A
 
 La versión de la distribución EDF y la versión de Vivado son identificadores distintos: EDF 26.06 es la versión de la distribución usada; Vivado 2026.1 es la versión usada para generar la base de hardware. Para desarrollar hardware personalizado con EDF, el bitstream, el handoff/XSA, la descripción del sistema y el firmware de arranque deben corresponder al mismo diseño.
 
+## Instalación
+
+Los pasos para instalar Vivado, preparar las fuentes EDF, grabar la microSD y hacer la primera comprobación están en [`INSTALLATION.md`](INSTALLATION.md). AMD no admite WSL como host de compilación para EDF 26.06; en WSL se validaron partes del entorno, pero no terminó una reconstrucción completa de Linux.
+
 ## Primer periférico: pantalla táctil AN970
 
 La AN970 es un módulo LCD táctil capacitivo de 7 pulgadas, resolución 800×480 y entrada RGB de 24 bits. ALINX documenta un experimento de pantalla AN970 para AXU3EG. La placa tiene encabezados de expansión de 40 pines; el conector P4 de la pantalla está pensado para conectarse a un encabezado ALINX compatible. La asignación final debe comprobarse contra el manual de la revisión exacta de la placa y el pin 1 antes de alimentar.
