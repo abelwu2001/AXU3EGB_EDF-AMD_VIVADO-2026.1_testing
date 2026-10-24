@@ -13,9 +13,25 @@ La idea es aprender primero a observar el sistema, después controlar el ventila
 
 ## Lo que sabemos antes de cambiar el hardware
 
-El diseño Vivado 2026.1 actual tiene una salida de un bit `fan_on_n` asignada a AA11. En el diagrama, esa salida viene de un bloque `xlconstant` con valor 0; por lo tanto, hoy no hay una señal PWM controlable por Linux. Un valor fijo tampoco permite escoger una velocidad intermedia.
+El manual AXU3EGB confirma que `FAN_PWM` llega a AA11, Bank 43, y que el nivel alto activa Q9 y enciende la fan. El diagrama de la imagen muestra el MOSFET como interruptor de la alimentación de 12 V. No hay una entrada de RPM/tacómetro en ese circuito; el porcentaje que mostraremos será el PWM solicitado, no una medición de velocidad.
 
-Hay una observación que debemos resolver antes de diseñar el control: el manual AXU3EG describe que la salida alta activa el transistor y enciende el ventilador, pero en la placa se oyó girar con la imagen actual. No conviene deducir la polaridad a partir del nombre `fan_on_n` ni escribir valores al pin a ciegas. Puede haber una diferencia de revisión, cableado o una ruta de alimentación distinta. Primero registraremos la revisión exacta de la placa y validaremos la salida con una prueba controlada.
+El diseño mínimo Vivado 2026.1 tiene actualmente `fan_on_n` en AA11 conectado a un `xlconstant` con valor 0. Eso es una salida fija: no crea PWM ni permite graduar la velocidad. El nombre `fan_on_n` contradice el nombre de red `FAN_PWM` y el nivel activo alto que indica el manual; antes de controlar la placa hay que revisar el wrapper/XDC que efectivamente se cargó y confirmar la respuesta con una prueba breve por JTAG. No cambiar la imagen EDF que ya arranca.
+
+Existe una referencia separada para AXU3EG con un periférico AXI PWM de 25 kHz en AA11 y un driver térmico Linux. Esa implementación es del proyecto PetaLinux/Vivado 2023.2, no está incorporada al bitstream ni al kernel EDF de esta placa. Su tabla de temperaturas y ciclos fue ajustada por su autor para su propia configuración, así que no copiarla directamente.
+
+## Perfil térmico inicial acordado (todavía no aplicado)
+
+Controlaremos con la temperatura más alta disponible entre `Temp_LPD`, `Temp_FPD` y `Temp_PL`. Son sensores del SoC (cerca del RPU, del APU y del System Monitor de PL), no un sensor de temperatura de la fan ni de la habitación.
+
+| Temperatura máxima | Acción propuesta |
+| --- | --- |
+| Menos de 38 °C | Fan apagada, solo después de comprobar que puede volver a arrancar de forma fiable. |
+| 38–40 °C | Histéresis: conservar el estado anterior para evitar ciclos rápidos. |
+| Al llegar a 40 °C | Arranque breve al 100 %; luego bajar al mínimo estable que se mida en esta fan. |
+| 40–60 °C | Subir progresivamente desde ese mínimo estable hasta 100 %. |
+| 60 °C o más | 100 %. |
+
+Los 40 °C y 60 °C son umbrales iniciales para probar, no límites térmicos certificados. La PL debe arrancar con salida en estado seguro; el mecanismo de control Linux debe llevar la fan a 100 % ante lectura inválida o error. Para que una caída del servicio también sea segura, el diseño final necesita watchdog/estado seguro en hardware o el control del framework térmico del kernel; una aplicación de usuario sola no protege ante todos los fallos. Ajustaremos los umbrales luego de observar temperatura bajo carga y comprobar el arranque mínimo de la fan.
 
 ## Etapa 1: observar Linux sin modificarlo
 
@@ -46,11 +62,11 @@ En esta placa, el proveedor IIO se identificó como `xilinx-ams`. Sus etiquetas 
 
 El controlador también publica nombres de rieles de tensión (`VCCINT`, `VCCBRAM`, `VCC_PSDDR`, entre otros). Una lectura de tensión por sí sola no es una medida de potencia: para calcular watts se necesita también medir la corriente correspondiente.
 
-## Etapa 2: entender la señal de la fan
+## Etapa 2: entender y probar la señal de la fan
 
-Revisar la revisión impresa en la placa y el modelo/etiqueta del ventilador. Comparar el circuito del manual con el XDC y el bitstream cargado. Luego preparar una prueba por JTAG en la que se pueda alternar apagado/encendido con límites de tiempo y observar la temperatura por UART. Conservar la microSD que ya arranca y tener un retorno al bitstream fijo.
+Revisar la revisión impresa en la placa y el modelo/etiqueta del ventilador. Comparar el circuito del manual con el XDC y el bitstream cargado. Luego preparar una prueba por JTAG en la que se pueda alternar apagado/encendido con límites de tiempo y observar la temperatura por UART. Conservar la microSD que ya arranca y tener un retorno al bitstream fijo. Verificar primero 0 % y 100 % antes de probar valores intermedios.
 
-No comenzar con PWM lento. Si el ventilador de dos cables es BLDC, el PWM de baja frecuencia puede producir solo encendido/apagado, zumbido o un punto muerto. Primero se identifica el ventilador y se mide qué frecuencia y ciclo útil consigue un arranque fiable. El control nunca debe dejarlo por debajo de su ciclo de arranque cuando la temperatura lo requiera.
+La referencia de 2023.2 usa 25 kHz y reporta control suave en su fan de dos cables. Tomaremos esa frecuencia como candidata, no como validación de esta unidad/revisión. Mediremos el ciclo mínimo de arranque y el mínimo estable; el control nunca debe dejar la fan por debajo de ese valor cuando la temperatura lo requiera.
 
 ## Etapa 3: añadir control proporcional
 
@@ -70,7 +86,8 @@ Linux sí puede mostrar CPU, memoria, carga, procesos, red y temperaturas dispon
 
 ## Referencias
 
-- [Manual de usuario AXU3EG de ALINX](https://www.alinx.com/public/upload/file/AXU3EG_User_Manual.pdf)
+- [Manual oficial AXU3EGB de ALINX](https://alinx.com/public/upload/file/AXU3EGB_UG.pdf)
+- [Driver PWM térmico Linux de referencia (proyecto PetaLinux 2023.2)](https://github.com/Nero7991/zcu106-2023.2-axu3eg/blob/master/project-spec/meta-user/recipes-modules/pl-pwm-fan/files/pl-pwm-fan.c)
+- [Device tree térmico de referencia (proyecto PetaLinux 2023.2)](https://github.com/Nero7991/zcu106-2023.2-axu3eg/blob/master/project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi)
 - [Interfaz hwmon del kernel Linux](https://www.kernel.org/doc/html/latest/hwmon/sysfs-interface.html)
-- [Pruebas de hardware AN970 preparadas para esta placa](an970/README.md)
-
+- [Pruebas de hardware AN970 preparadas para esta placa](AN970_Plan_Prueba.md)
