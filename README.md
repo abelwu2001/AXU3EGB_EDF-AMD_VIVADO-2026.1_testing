@@ -89,9 +89,13 @@ done
 
 El kernel puede reportar servicios opcionales fallidos, por ejemplo una espera de red durante el arranque. Revisar cada unidad por separado antes de considerarla un problema de hardware.
 
+## Descarga de la imagen EDF
+
+La imagen WIC adaptada para AXU3EG se va a compartir en la [carpeta de OneDrive](https://1drv.ms/f/c/c153ffb3571b5ab8/IgD8ozVjlK9xR7iuHMOohfT8AUykfKEdCnq35IGSLgh_6Ew?e=mqqHaI) cuando termine de subirse. El archivo ocupa varios GB y por eso no se almacena en GitHub.
+
 ## Uso de imágenes y licencias
 
-Las imágenes WIC/rootfs, descargas de AMD, licencias, claves, credenciales y salidas generadas de Vivado/Yocto no se distribuyen en este README. Antes de publicar fuentes HDL, IP empaquetada o binarios, revisar las licencias de AMD/Xilinx, ALINX y de los autores originales. Mantener atribuciones y enlaces a los repositorios de referencia.
+El WIC/rootfs se comparte desde la carpeta de OneDrive indicada arriba; las descargas de AMD, licencias, claves, credenciales y salidas generadas de Vivado/Yocto no se distribuyen en este repositorio. Antes de publicar fuentes HDL, IP empaquetada o binarios, revisar las licencias de AMD/Xilinx, ALINX y de los autores originales. Mantener atribuciones y enlaces a los repositorios de referencia.
 
 La imagen original de PetaLinux 2020 y los proyectos Vivado 2023.2 se conservan como referencias separadas; no se sobrescribieron con la base EDF.
 
