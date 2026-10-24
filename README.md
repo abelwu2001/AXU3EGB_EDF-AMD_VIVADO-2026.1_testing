@@ -69,6 +69,8 @@ Se identificaron los nombres AN9238, AN706, AN9767 y la cámara AN5641 como posi
 
 El proyecto reproducible, BOOT.BIN, XSA, IP AXI, overlay Device Tree, servicio y notas de validación están en [`hardware/fan-control-stage2/README.md`](hardware/fan-control-stage2/README.md). El repo incluye el Python actualizado con impulso de arranque al iniciar y al salir del estado apagado; ese último cambio todavía debe copiarse a la placa para quedar sincronizado con la versión publicada.
 
+La bitácora completa de la automatización, con pasos, comandos, salidas de terminal y código, está en [`docs/Bitacora_PWM_Fan_AXU3EGB_2026-10-24.pdf`](docs/Bitacora_PWM_Fan_AXU3EGB_2026-10-24.pdf).
+
 ## Próximo proyecto guiado: ventilador y monitor en la AN970
 
 El plan de estudio para medir temperaturas, añadir control PWM seguro y preparar un panel tipo `htop` para la pantalla está en [`docs/plan-control-fan-monitor.md`](docs/plan-control-fan-monitor.md). Separa las mediciones reales (CPU, RAM, red y temperaturas) de las que requieren hardware adicional (watts y RPM).

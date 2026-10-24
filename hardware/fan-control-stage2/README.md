@@ -1,4 +1,4 @@
-# AXU3EGB fan PWM — Vivado 2026.1 + AMD EDF 2026.1
+# AXU3EGB fan PWM — Vivado 2026.1 + AMD EDF 26.06
 
 ## Estado
 
@@ -10,11 +10,13 @@ La compilación `bitbake xilinx-bootbin` terminó correctamente; todas las tarea
 
 El overlay runtime final se compiló y se combinó con el DTB de este BOOT.BIN usando las herramientas de Device Tree del build. La combinación produjo `/axi/axi_pwm@a0000000`, con `compatible = "xlnx,axi-pwm-1.0"`, y no contiene `firmware-name` que ordene una segunda carga de bitstream.
 
-**Falta probar el arranque en la placa.** Los scripts de ventilador están preparados, pero aún no instalados ni activados en Linux; no afirmamos todavía que el control automático funcione en hardware.
+**Prueba en placa completada parcialmente.** El BOOT.BIN se copió a `/efi/boot.bin`, arrancó desde microSD y Linux volvió por UART y SSH. El estado del FPGA Manager mostró `operating`. Se instaló el overlay y apareció `uio4` en `0xA0000000`; `fan-pwm.service` quedó habilitado y activo. A unos 29–30 °C leyó los tres sensores, escribió `CTRL=0x3 PERIOD=4000 DUTY=0` y la fan se detuvo físicamente.
+
+Esto confirma arranque, acceso UIO y apagado a temperatura ambiente. **No confirma todavía** que la fan arranque de forma fiable al 30 % ni la rampa térmica de 40 a 60 °C. La versión de Python publicada incluye una mejora para dar un impulso al pasar de apagada a encendida, pero esa actualización aún debe copiarse a la placa y verificarse.
 
 ## Archivos
 
-- `BOOT_fan_pwm_2026-10-24.bin`: imagen lista para copiar como `/efi/boot.bin` en la microSD.
+- `BOOT_fan_pwm_2026-10-24.bin`: imagen que ya arrancó; puede copiarse como `/efi/boot.bin` en la microSD.
 - `BOOT_fan_pwm_2026-10-24.manifest.json`, `.bif`, `bitbake-xilinx-bootbin.log`: manifiesto, lista de particiones y log de compilación.
 - `pl-fan-pwm-generated.dtsi`, `pl-fan-pwm-generated.dtso`: descripción original generada por SDT.
 - `software/fan-control/`: overlay runtime final, servicio systemd y controlador Python.

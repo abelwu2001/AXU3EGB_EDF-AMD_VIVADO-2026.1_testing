@@ -15,6 +15,7 @@ Guías de instalación y uso, comprobaciones hechas en la placa, mapas de pines 
 - [Plan de prueba progresiva para AN970](AN970_Plan_Prueba.md)
 - [Ventilador, sensores y monitor tipo htop](plan-control-fan-monitor.md)
 - [Proyecto completo fan PWM para EDF 26.06/Vivado 2026.1](../hardware/fan-control-stage2/README.md)
+- [Bitácora completa: pasos, comandos, salidas y código del PWM](Bitacora_PWM_Fan_AXU3EGB_2026-10-24.pdf)
 - [Manual de usuario AXU3EGB publicado por ALINX](fuentes/alinx/AXU3EGB_User_Manual_ALINX.pdf)
 - [Índice Markdown de fuentes oficiales y notas de compatibilidad](fuentes/alinx/REFERENCIAS_ALINX.md)
 - [Guías Linux oficiales de ALINX: resumen, límites y enlaces](fuentes/alinx/GUIAS_LINUX_ALINX_REFERENCIAS.md)
