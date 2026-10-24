@@ -65,6 +65,10 @@ La documentación de ALINX también enumera una ruta de captura MIPI con el mód
 
 Se identificaron los nombres AN9238, AN706, AN9767 y la cámara AN5641 como posibles pruebas futuras. Su interfaz, alimentación, asignación de pines y ejemplos de referencia se deben confirmar individualmente con el manual de cada módulo. Que el proyecto Vivado original tenga bloques relacionados no confirma que el módulo esté conectado o funcionando en el bitstream EDF actual.
 
+## Próximo proyecto guiado: ventilador y monitor en la AN970
+
+El plan de estudio para medir temperaturas, añadir control PWM seguro y preparar un panel tipo `htop` para la pantalla está en [`docs/plan-control-fan-monitor.md`](docs/plan-control-fan-monitor.md). Separa las mediciones reales (CPU, RAM, red y temperaturas) de las que requieren hardware adicional (watts y RPM).
+
 ## Verificación desde Linux
 
 Ejecutar los comandos por separado en una terminal Linux o por SSH:
