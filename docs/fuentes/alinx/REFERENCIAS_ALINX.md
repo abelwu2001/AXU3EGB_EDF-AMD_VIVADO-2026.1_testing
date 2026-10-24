@@ -5,8 +5,8 @@ Esta página reúne enlaces de documentación pública del fabricante y anota el
 ## Documentación oficial consultada
 
 - [Manual de usuario AXU3EGB (PDF, copia en este repositorio)](AXU3EGB_User_Manual_ALINX.pdf)
-- [Página oficial de AXU3EGB y especificaciones](https://www.en.alinx.com/Product/SoC-Development-Boards/Zynq-UltraScale-plus-MPSoC/AXU2CGB-I.html (la matriz de producto en esa página incluye la variante AXU3EGB))
-- [Manual AXU3EG, familia relacionada (PDF)](https://www.alinx.com/public/upload/file/AXU3EGB_User_Manual.pdf)
+- [Página oficial de productos AXU2CGB-I/AXU3EGB y matriz de especificaciones](https://www.en.alinx.com/Product/SoC-Development-Boards/Zynq-UltraScale-plus-MPSoC/AXU2CGB-I.html)
+- [Manual de usuario AXU3EGB (PDF, fabricante)](https://www.alinx.com/public/upload/file/AXU3EGB_User_Manual.pdf)
 - [Manual del módulo LCD táctil AN970 (PDF)](https://alinx.com/public/upload/file/AN970_User_Manual.pdf)
 - [Manual de cámara MIPI AN5641 (PDF)](https://alinx.com/public/upload/file/AN5641_User_Manual.pdf)
 - [Síntesis en Markdown del README oficial ALINX](README_ALINX_AXU3EG_FAMILIA.md)
