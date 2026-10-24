@@ -122,4 +122,4 @@ This repository tracks AMD EDF bring-up and future Vivado 2026.2 experiments on 
 
 ## Documentación de placa y pinout
 
-La recopilación de guías de instalación, primer arranque, periféricos, AN970, mapas J45/J46 y manuales de referencia está en [`docs/`](docs/README.md). La lámina de consulta para Vivado/XDC incluye una foto real de la placa y las tablas completas de pines.
+La recopilación de guías, PDFs, manuales y tablas de pines está en [`docs/`](docs/README.md). La lámina de Vivado/XDC (6000 × 6500 px) muestra J45/J46 completos, AN970 P4 y las señales PL principales con sus package pins.

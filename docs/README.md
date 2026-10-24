@@ -26,7 +26,7 @@ El bitstream que arrancó es una base PS mínima. No valida todavía LCD/táctil
 
 ## Notas de uso
 
-- La lámina grande está en resolución 6000 × 5000 para acercar e imprimir; J46 aparece a la izquierda y J45 a la derecha en la foto del manual.
+- La lámina grande está en resolución 6000 × 6500 para acercar e imprimir; J46 aparece a la izquierda y J45 a la derecha en la foto del manual.
 - El mapeo de AN970 se transcribe desde manuales ALINX, pero falta probar la pantalla en la placa y validar el XDC antes de cablear y generar un bitstream.
-- J45/J46 son señales de PL; no aplicar 5 V a sus I/O.
+- J45/J46 son señales de PL; no aplicar 5 V a sus I/O. La lámina añade UART PL, LED/botón PL, fan, RS485, MIPI y Ethernet PL con package pins; B65 es 1.2 V y B66 1.8 V.
 - Los documentos de Vivado/EDF y las fuentes de terceros mantienen sus propias licencias y atribuciones. Las imágenes de AMD, credenciales, licencias, builds y archivos WIC no se guardan en GitHub.
