@@ -118,3 +118,8 @@ La imagen original de PetaLinux 2020 y los proyectos Vivado 2023.2 se conservan 
 
 This repository tracks AMD EDF bring-up and future Vivado 2026.2 experiments on an ALINX AXU3EG/AXU3EGB. The hardware bring-up that has actually been tested used **Vivado 2026.1** and the official **AMD EDF 26.06** image. Linux booted from microSD; UART console, four Cortex-A53 CPUs, 4 GiB installed DDR, PS GEM3 Ethernet/SSH, and temperature readings were observed. The fan was heard spinning, but its AA11 output is a fixed logic 0 with no PWM; the polarity/revision discrepancy still needs checking. The active PL design is minimal and does not contain the AN970 display, AN5641 camera path, or the full 2023.2 TRD peripherals. The AN970 has not yet been tested. Vivado/EDF 2026.2 support remains future work.
 
+
+
+## Documentación de placa y pinout
+
+La recopilación de guías de instalación, primer arranque, periféricos, AN970, mapas J45/J46 y manuales de referencia está en [`docs/`](docs/README.md). La lámina de consulta para Vivado/XDC incluye una foto real de la placa y las tablas completas de pines.
