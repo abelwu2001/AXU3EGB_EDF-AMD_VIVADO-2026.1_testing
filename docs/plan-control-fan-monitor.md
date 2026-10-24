@@ -42,6 +42,10 @@ ip -s link show end0
 
 **Qué estudiar:** `hwmon` y `thermal` son interfaces de lectura del kernel. Temperaturas normalmente aparecen en milésimas de grado Celsius; por ejemplo, `30000` significa `30.0 °C`. Que Linux muestre una temperatura no revela por sí sola qué componente físico mide.
 
+En esta placa, el proveedor IIO se identificó como `xilinx-ams`. Sus etiquetas relacionan `in_temp7` con `Temp_LPD`, `in_temp8` con `Temp_FPD` y `in_temp20` con `Temp_PL`. El manual técnico de AMD ubica `Temp_LPD` cerca del MPCore RPU, `Temp_FPD` cerca del MPCore APU y `Temp_PL` en la unidad PL System Monitor. Son posiciones de sensores dentro del SoC, no sensores en la fan ni temperaturas de cada núcleo individual. AMD documenta esta ubicación en el [TRM UG1085, capítulo System Monitors](https://docs.amd.com/api/khub/documents/xzMsp_c5sG9J6A3u7NkJYQ/content?Ft-Calling-App=ft).
+
+El controlador también publica nombres de rieles de tensión (`VCCINT`, `VCCBRAM`, `VCC_PSDDR`, entre otros). Una lectura de tensión por sí sola no es una medida de potencia: para calcular watts se necesita también medir la corriente correspondiente.
+
 ## Etapa 2: entender la señal de la fan
 
 Revisar la revisión impresa en la placa y el modelo/etiqueta del ventilador. Comparar el circuito del manual con el XDC y el bitstream cargado. Luego preparar una prueba por JTAG en la que se pueda alternar apagado/encendido con límites de tiempo y observar la temperatura por UART. Conservar la microSD que ya arranca y tener un retorno al bitstream fijo.
