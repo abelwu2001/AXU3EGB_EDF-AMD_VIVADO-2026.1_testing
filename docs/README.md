@@ -16,6 +16,7 @@ Guías de instalación y uso, comprobaciones hechas en la placa, mapas de pines 
 - [Ventilador, sensores y monitor tipo htop](plan-control-fan-monitor.md)
 - [Manual de usuario AXU3EGB publicado por ALINX](fuentes/alinx/AXU3EGB_User_Manual_ALINX.pdf)
 - [Índice Markdown de fuentes oficiales y notas de compatibilidad](fuentes/alinx/REFERENCIAS_ALINX.md)
+- [Guías Linux oficiales de ALINX: resumen, límites y enlaces](fuentes/alinx/GUIAS_LINUX_ALINX_REFERENCIAS.md)
 - [Síntesis Markdown del README oficial de ALINX para la familia AXU3EG](fuentes/alinx/README_ALINX_AXU3EG_FAMILIA.md)
 
 ## Estado comprobado
