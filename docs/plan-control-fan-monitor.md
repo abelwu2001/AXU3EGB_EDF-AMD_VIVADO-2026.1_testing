@@ -1,93 +1,84 @@
-# Proyecto guiado: ventilador y monitor para la AN970
+# Control PWM de la fan y monitor de Linux
 
-La idea es aprender primero a observar el sistema, después controlar el ventilador y finalmente mostrar el estado de Linux en la pantalla. Cada etapa debe quedar probada antes de pasar a la siguiente.
+## Estado probado en la AXU3EGB (24-10-2026)
 
-## Qué queremos mostrar
+La placa arrancó desde la microSD con un BOOT.BIN creado para el diseño Vivado 2026.1 y AMD EDF 26.06. El proceso de arranque pasó por FSBL, cargó el bitstream y Linux volvió por UART/SSH. La huella del BOOT.BIN y los archivos de soporte están registrados en [`hardware/fan-control-stage2/README.md`](../hardware/fan-control-stage2/README.md).
 
-- Uso de cada CPU, carga promedio, memoria y procesos, como en `htop`.
-- Temperaturas que Linux realmente exponga, identificando qué mide cada sensor antes de ponerle un nombre.
-- Tráfico de red en bytes por segundo, calculado a partir de los contadores acumulados de la interfaz.
-- Estado del ventilador y porcentaje de PWM solicitado.
-- Consumo eléctrico en watts solo si agregamos o encontramos un sensor de corriente y tensión. El uso de CPU no es una medición de watts.
-- RPM solo si existe una señal de tacómetro. La documentación de la placa describe el control del ventilador por una salida a transistor; no se ha confirmado una lectura de RPM.
+Linux aplica un overlay Device Tree al iniciar el servicio, registra el PWM y lo ofrece a través de UIO. Se observó `uio4` con mapa `0x00000000a0000000`, tamaño `0x10000`. `fan-pwm.service` quedó habilitado y activo. El programa leyó `Temp_LPD`, `Temp_FPD` y `Temp_PL`; a unos 29–30 °C eligió la lectura mayor, ordenó `DUTY=0`, y la fan se detuvo físicamente.
 
-## Lo que sabemos antes de cambiar el hardware
+Esto valida el arranque EDF con el diseño PWM, el mapeo UIO y el estado apagado. **Aún no valida físicamente el arranque a 30 %, ni la rampa completa de 40 a 60 °C.** No se calentó artificialmente el SoC para forzar la prueba.
 
-El manual AXU3EGB confirma que `FAN_PWM` llega a AA11, Bank 43, y que el nivel alto activa Q9 y enciende la fan. El diagrama de la imagen muestra el MOSFET como interruptor de la alimentación de 12 V. No hay una entrada de RPM/tacómetro en ese circuito; el porcentaje que mostraremos será el PWM solicitado, no una medición de velocidad.
+## Qué hace cada bloque, en simple
 
-El diseño mínimo Vivado 2026.1 tiene actualmente `fan_on_n` en AA11 conectado a un `xlconstant` con valor 0. Eso es una salida fija: no crea PWM ni permite graduar la velocidad. El nombre `fan_on_n` contradice el nombre de red `FAN_PWM` y el nivel activo alto que indica el manual; antes de controlar la placa hay que revisar el wrapper/XDC que efectivamente se cargó y confirmar la respuesta con una prueba breve por JTAG. No cambiar la imagen EDF que ya arranca.
+- **PS**: los Cortex-A53 que ejecutan Linux.
+- **PL**: la lógica de la FPGA. Allí está el bloque `axi_pwm`.
+- **AXI-Lite**: el bus sencillo por el que el PS escribe los registros del PWM.
+- **Device Tree**: el mapa que Linux consulta para encontrar hardware. EDF deja la descripción de PL en un overlay separado.
+- **Overlay**: añade la descripción de reloj, puente AXI y PWM al árbol activo. El overlay preparado no contiene `firmware-name`, para no pedir una segunda carga de bitstream.
+- **UIO**: interfaz del kernel que asigna al programa un mapa identificado del bloque hardware. En esta placa, la base es `0xA0000000`.
+- **systemd**: inicia el script de overlay y luego el programa Python; `enable` hace que systemd lo repita en los siguientes arranques.
 
-Existe una referencia separada para AXU3EG con un periférico AXI PWM de 25 kHz en AA11 y un driver térmico Linux. Esa implementación es del proyecto PetaLinux/Vivado 2023.2, no está incorporada al bitstream ni al kernel EDF de esta placa. Su tabla de temperaturas y ciclos fue ajustada por su autor para su propia configuración, así que no copiarla directamente.
+## Salida de fan y polaridad
 
-## Perfil térmico inicial acordado (todavía no aplicado)
+La fan está conectada al circuito de transistor controlado por la señal `FAN_PWM`/AA11. En las pruebas con constantes, el valor lógico 0 hizo girar la fan a máxima velocidad y el valor 1 la detuvo. Por eso el PWM del diseño se invierte para esta salida activa en bajo. Esta observación de la placa prevalece sobre asumir la polaridad solo por el nombre del puerto.
 
-Controlaremos con la temperatura más alta disponible entre `Temp_LPD`, `Temp_FPD` y `Temp_PL`. Son sensores del SoC (cerca del RPU, del APU y del System Monitor de PL), no un sensor de temperatura de la fan ni de la habitación.
+No hay señal de tacómetro documentada en ese circuito. El programa conoce el ciclo útil que ordena, no la velocidad real en RPM.
 
-| Temperatura máxima | Acción propuesta |
-| --- | --- |
-| Menos de 38 °C | Fan apagada, solo después de comprobar que puede volver a arrancar de forma fiable. |
-| 38–40 °C | Histéresis: conservar el estado anterior para evitar ciclos rápidos. |
-| Al llegar a 40 °C | Arranque breve al 100 %; luego bajar al mínimo estable que se mida en esta fan. |
-| 40–60 °C | Subir progresivamente desde ese mínimo estable hasta 100 %. |
+## Registros del IP `axi_pwm`
+
+El bloque está en `0xA0000000`, ocupa `0x10000` bytes y recibe PL0 a 99.999001 MHz. Sus registros usados por el programa son:
+
+| Desplazamiento | Uso |
+|---|---|
+| `0x00` (`CTRL`) | bit 0 habilita PWM; bit 1 invierte la salida. `CTRL=3` activa ambas opciones. |
+| `0x04` (`PERIOD`) | ciclos por período PWM. |
+| `0x08` (`DUTY`) | ciclos activos de cada período. |
+
+Con `PERIOD=4000`, la frecuencia es `99,999,001 / 4000 ≈ 25 kHz`. El porcentaje pedido se convierte en `DUTY = redondear(4000 × porcentaje / 100)`. Por ejemplo, 30 % equivale a 1200 y 100 % a 4000. La salida se invierte porque la señal de la placa es activa en bajo.
+
+## Curva de temperatura que implementa el programa
+
+Se leen las tres temperaturas AMS y se usa la más alta. Los nombres corresponden a sensores del SoC; no son temperatura ambiente ni temperatura medida en la fan.
+
+| Temperatura máxima | Acción del programa |
+|---|---|
+| Por debajo de 38 °C | Fan apagada. |
+| 38 a menos de 40 °C | Histéresis: si ya estaba girando, continúa al mínimo; si estaba apagada, sigue apagada. |
+| 40 °C | Solicita 30 % después de un impulso de arranque a 100 % por dos segundos. |
+| 40–60 °C | Rampa lineal: 30 % a 40 °C, 47.5 % a 45 °C, 65 % a 50 °C, 82.5 % a 55 °C y 100 % a 60 °C. |
 | 60 °C o más | 100 %. |
+| No hay sensores etiquetados | Modo seguro del programa: solicita 100 %. |
 
-Los 40 °C y 60 °C son umbrales iniciales para probar, no límites térmicos certificados. La PL debe arrancar con salida en estado seguro; el mecanismo de control Linux debe llevar la fan a 100 % ante lectura inválida o error. Para que una caída del servicio también sea segura, el diseño final necesita watchdog/estado seguro en hardware o el control del framework térmico del kernel; una aplicación de usuario sola no protege ante todos los fallos. Ajustaremos los umbrales luego de observar temperatura bajo carga y comprobar el arranque mínimo de la fan.
+El programa da un impulso de dos segundos al iniciarse. La versión más nueva del archivo también lo da cuando la curva vuelve a encender la fan desde apagada. Esa mejora está en este repositorio, pero **todavía falta copiar esa versión actualizada al Linux de la placa y reiniciar el servicio**; la prueba en vivo mostrada arriba usó la versión anterior, que solo daba el impulso al iniciar el servicio.
 
-## Etapa 1: observar Linux sin modificarlo
+El mínimo de 30 % aún es una estimación. Hay que verificar que la fan arranque y permanezca girando cuando esa orden se use. Si no arranca de forma confiable, se debe subir el mínimo antes de depender de la curva.
 
-Entrar por SSH y ejecutar estos comandos de lectura. No cambian la configuración:
+## Servicio Linux y comprobaciones
+
+El servicio es `fan-pwm.service`. Comandos de lectura:
 
 ```sh
-printf '%s\n' '--- temperaturas hwmon ---'
-for d in /sys/class/hwmon/hwmon*; do
-    [ -e "$d" ] || continue
-    printf '%s: ' "$d"
-    cat "$d/name" 2>/dev/null || true
-    for f in "$d"/temp*_label "$d"/temp*_input "$d"/fan*_input "$d"/pwm*; do
-        [ -r "$f" ] && printf '  %s = %s\n' "${f##*/}" "$(cat "$f")"
-    done
-done
-printf '%s\n' '--- zonas térmicas ---'
-for d in /sys/class/thermal/thermal_zone*; do
-    [ -e "$d" ] || continue
-    printf '%s type=%s temp=%s\n' "$d" "$(cat "$d/type" 2>/dev/null)" "$(cat "$d/temp" 2>/dev/null)"
-done
-printf '%s\n' '--- red ---'
-ip -s link show end0
+sudo systemctl status fan-pwm.service --no-pager
+journalctl -u fan-pwm.service -n 30 --no-pager
+cat /sys/class/fpga_manager/fpga0/state
+cat /sys/class/uio/uio4/maps/map0/addr
 ```
 
-**Qué estudiar:** `hwmon` y `thermal` son interfaces de lectura del kernel. Temperaturas normalmente aparecen en milésimas de grado Celsius; por ejemplo, `30000` significa `30.0 °C`. Que Linux muestre una temperatura no revela por sí sola qué componente físico mide.
+En el log, una línea como `max=30.2C; fan=0.0%` indica lectura y orden calculada. `registers: CTRL=0x3 PERIOD=4000 DUTY=0` muestra los valores escritos, no una lectura de RPM.
 
-En esta placa, el proveedor IIO se identificó como `xilinx-ams`. Sus etiquetas relacionan `in_temp7` con `Temp_LPD`, `in_temp8` con `Temp_FPD` y `in_temp20` con `Temp_PL`. El manual técnico de AMD ubica `Temp_LPD` cerca del MPCore RPU, `Temp_FPD` cerca del MPCore APU y `Temp_PL` en la unidad PL System Monitor. Son posiciones de sensores dentro del SoC, no sensores en la fan ni temperaturas de cada núcleo individual. AMD documenta esta ubicación en el [TRM UG1085, capítulo System Monitors](https://docs.amd.com/api/khub/documents/xzMsp_c5sG9J6A3u7NkJYQ/content?Ft-Calling-App=ft).
+Para desactivar temporalmente el control:
 
-El controlador también publica nombres de rieles de tensión (`VCCINT`, `VCCBRAM`, `VCC_PSDDR`, entre otros). Una lectura de tensión por sí sola no es una medida de potencia: para calcular watts se necesita también medir la corriente correspondiente.
+```sh
+sudo systemctl disable --now fan-pwm.service
+```
 
-## Etapa 2: entender y probar la señal de la fan
+Al salir limpiamente, el programa deja la orden PWM al 100 % por seguridad. El sistema todavía no tiene un watchdog independiente que garantice 100 % ante cualquier caída brusca de Linux o pérdida de energía; no tratar este servicio como protección térmica certificada.
 
-Revisar la revisión impresa en la placa y el modelo/etiqueta del ventilador. Comparar el circuito del manual con el XDC y el bitstream cargado. Luego preparar una prueba por JTAG en la que se pueda alternar apagado/encendido con límites de tiempo y observar la temperatura por UART. Conservar la microSD que ya arranca y tener un retorno al bitstream fijo. Verificar primero 0 % y 100 % antes de probar valores intermedios.
+## Próximos pasos de aprendizaje
 
-La referencia de 2023.2 usa 25 kHz y reporta control suave en su fan de dos cables. Tomaremos esa frecuencia como candidata, no como validación de esta unidad/revisión. Mediremos el ciclo mínimo de arranque y el mínimo estable; el control nunca debe dejar la fan por debajo de ese valor cuando la temperatura lo requiera.
+1. Instalar la corrección del impulso al encender por temperatura y comprobar el log.
+2. Comprobar el mínimo real de 30 % con observación física, sin dejar la fan detenida bajo carga.
+3. Verificar a futuro el comportamiento a temperaturas intermedias sin forzar temperaturas peligrosas.
+4. Luego preparar en la AN970 un monitor tipo `htop` con CPU, memoria, carga, red y temperaturas.
 
-## Etapa 3: añadir control proporcional
-
-La ruta de aprendizaje será: contador PWM sintetizable en la PL → registro de ciclo útil accesible desde Linux por AXI-Lite → prueba manual del ciclo útil → curva térmica con histéresis y estado seguro ante errores. La curva se ajusta con mediciones reales; los límites críticos de temperatura mantienen la velocidad máxima.
-
-Se prefiere PWM de hardware porque mantiene la frecuencia estable mientras Linux ejecuta otras tareas. Después se integra con el framework térmico de Linux para que el kernel ordene los estados de enfriamiento. Un servicio de espacio de usuario puede servir para aprender y graficar, pero no debe ser el único mecanismo de protección térmica.
-
-## Etapa 4: preparar la AN970
-
-La pantalla necesita primero un generador RGB en la PL con temporizaciones confirmadas en su manual. Se verifica con simulación, síntesis e implementación, y se prueba el patrón de barras por JTAG. Después se habilita en Linux una ruta de framebuffer/DRM adecuada para esa interfaz y se conecta una aplicación de pantalla completa. La entrada táctil se valida como etapa separada.
-
-La aplicación tipo `htop` leerá `/proc/stat`, `/proc/meminfo`, `/proc/net/dev` y las temperaturas identificadas en `sysfs`. Calculará diferencias entre muestras para obtener porcentajes y velocidad de red. No escribirá registros de hardware; el control térmico queda en el driver/framework del kernel.
-
-## Alcance real de las mediciones
-
-Linux sí puede mostrar CPU, memoria, carga, procesos, red y temperaturas disponibles. Los contadores de red permiten calcular caudal, por ejemplo `Mbit/s`. Para consumo eléctrico hacen falta lecturas de tensión y corriente de la alimentación. Para velocidad real de la fan hacen falta pulsos de tacómetro o un sensor externo. Si no existen esas señales, la interfaz debe mostrar “no medido” y, para el ventilador, el PWM solicitado en lugar de inventar watts o RPM.
-
-## Referencias
-
-- [Manual oficial AXU3EGB de ALINX](https://alinx.com/public/upload/file/AXU3EGB_UG.pdf)
-- [Driver PWM térmico Linux de referencia (proyecto PetaLinux 2023.2)](https://github.com/Nero7991/zcu106-2023.2-axu3eg/blob/master/project-spec/meta-user/recipes-modules/pl-pwm-fan/files/pl-pwm-fan.c)
-- [Device tree térmico de referencia (proyecto PetaLinux 2023.2)](https://github.com/Nero7991/zcu106-2023.2-axu3eg/blob/master/project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi)
-- [Interfaz hwmon del kernel Linux](https://www.kernel.org/doc/html/latest/hwmon/sysfs-interface.html)
-- [Pruebas de hardware AN970 preparadas para esta placa](AN970_Plan_Prueba.md)
+Watts reales requieren tensión y corriente medidos. RPM reales requieren tacómetro. Si no existen esas señales, se debe mostrar “no medido” y no inventar esos valores.

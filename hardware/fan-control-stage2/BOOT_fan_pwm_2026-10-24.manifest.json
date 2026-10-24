@@ -1,0 +1,25 @@
+{
+  "device-tree": {
+    "branch": "xlnx_rebase_v2026.01",
+    "srcrev": "980da51527e0a9a7a79ac218347ade2bfd5bb330"
+  },
+  "u-boot": {
+    "branch": "xlnx_rebase_v2026.01",
+    "srcrev": "9a86d4351c5e29db068a2a0e230b74d4fbd55997"
+  },
+  "fsbl": {
+    "branch": "xlnx_rel_v2026.1.1",
+    "srcrev": "7637d1bd2d81ebaf62aec31edb9db8d7d8cab2e1"
+  },
+  "trusted-firmware-a": {
+    "branch": "xlnx_rebase_v2.14_update1",
+    "srcrev": "501fae71936c40f59b493b76fb41f4d0fbb1b139"
+  },
+  "pmu-firmware": {
+    "branch": "xlnx_rel_v2026.1.1",
+    "srcrev": "7637d1bd2d81ebaf62aec31edb9db8d7d8cab2e1"
+  },
+  "bootbin-version-header": {
+    "version": "axu3eg-ps-v1.0"
+  }
+}

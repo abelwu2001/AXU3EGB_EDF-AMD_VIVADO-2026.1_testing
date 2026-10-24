@@ -11,7 +11,7 @@ Vivado confirmado: **2026.1**. Imagen que arranco: EDF oficial **26.06** con BOO
 | UART0 del PS | Consola serie CP210x/COM4 muestra FSBL, U-Boot y Linux | OK |
 | microSD / eMMC | EDF arranca desde microSD de 64 GB y amplia `/`; eMMC aparece como `mmcblk1`, 29.6 GB, sin montar ni escribir | microSD OK; eMMC solo detectada |
 | Ethernet GEM3 del PS | `end0` UP con IPv4 e IPv6; el usuario confirmo tambien acceso SSH | OK |
-| Ventilador | Se oye girar y la salida AA11 esta fija en bajo en el bitstream actual | Gira; PWM/autorregulacion no implementados |
+| Ventilador | PWM AXI en `0xA0000000`, UIO4 y servicio systemd activos; a 29–30 °C ordenó 0 % y se detuvo físicamente | Arranque y apagado a temperatura ambiente comprobados; falta validar mínimo de 30 % y rampa de 40–60 °C |
 | Sensores termicos expuestos por Linux | `hwmon0/temp1..3_input`: aproximadamente 28.9, 30.0 y 28.8 grados en la lectura compartida | Lectura OK; nombres de zona sin identificar |
 
 ## En el proyecto original, aun sin probar

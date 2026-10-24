@@ -17,17 +17,17 @@ La placa arrancó desde una microSD de 64 GB y llegó a la consola Linux por UAR
 | Ethernet del PS | Interfaz `end0` activa con IPv4 e IPv6; SSH confirmado |
 | eMMC | Detectada como dispositivo de 29.6 GB; no se montó ni se modificó |
 | Temperaturas | Linux expuso tres lecturas de `hwmon`, alrededor de 28.9, 30.0 y 28.8 °C en la prueba compartida |
-| Ventilador | Se oyó girar; AA11 recibe un valor fijo 0 y no hay PWM. La polaridad observada requiere validación contra el manual y la revisión de la placa |
+| Ventilador | PWM AXI desde Linux: overlay aplicado, UIO4 en `0xA0000000`, servicio systemd activo. A 29–30 °C ordenó 0 % y la fan se detuvo físicamente; falta validar el giro a 30 % y el tramo térmico 40–60 °C |
 
 Estas observaciones prueban el arranque y algunas funciones del PS en esta placa. No constituyen una validación de todos los periféricos del kit.
 
 ## Hardware que está activo
 
-El bitstream que arrancó es una base mínima centrada en el Processing System (PS): Cortex-A53, DDR del PS, UART0, controlador SD, Ethernet GEM3 del PS y la salida del ventilador. La configuración de hardware se generó para la AXU3EG con Vivado 2026.1.
+El bitstream que arrancó es una base mínima para el Processing System (PS), con Cortex-A53, DDR del PS, UART0, controlador SD, Ethernet GEM3 del PS y un PWM AXI para la fan en la PL. No es el diseño completo de Vivado 2023.2. La configuración se generó para la AXU3EG con Vivado 2026.1.
 
 La lógica programable (PL) todavía **no** incluye el diseño completo de Vivado 2023.2. Por lo tanto, no están activos en el bitstream actual el LED y botón PL, RS485, Ethernet RGMII de PL, la ruta de cámara MIPI, DDR4 de PL, procesamiento de video, ni las interfaces RGB/táctil de la AN970. El Ethernet que se probó es GEM3 del PS, no el MAC de Ethernet de la PL.
 
-El ventilador se oyó girar, pero no está bajo control automático de Linux: la salida AA11 del bitstream actual viene de una constante 0 y este diseño no implementa PWM. El manual AXU3EG describe nivel alto como encendido del transistor; hay que resolver esa diferencia con la revisión y el cableado de esta placa antes de modificar la salida. Los sensores térmicos de Linux se leen, pero todavía no se asociaron a una zona o componente físico específico.
+Se comprobó experimentalmente que la salida constante 0 deja la fan a máxima velocidad y la constante 1 la apaga. El bitstream nuevo implementa `axi_pwm` en `0xA0000000`; el BOOT.BIN con FSBL/PS init actual arranca y permite que Linux acceda por UIO. El servicio térmico está habilitado: a unos 30 °C reportó `DUTY=0` y la fan se detuvo. La curva solicitada (arranque a 40 °C, rampa hasta 100 % a 60 °C) está implementada en software, pero sus valores intermedios aún requieren validación física. El circuito no expone tacómetro: mostramos porcentaje PWM solicitado, no RPM reales.
 
 ## AMD EDF y Vivado
 
@@ -64,6 +64,10 @@ La documentación de ALINX también enumera una ruta de captura MIPI con el mód
 ## Otros módulos del kit
 
 Se identificaron los nombres AN9238, AN706, AN9767 y la cámara AN5641 como posibles pruebas futuras. Su interfaz, alimentación, asignación de pines y ejemplos de referencia se deben confirmar individualmente con el manual de cada módulo. Que el proyecto Vivado original tenga bloques relacionados no confirma que el módulo esté conectado o funcionando en el bitstream EDF actual.
+
+## Control PWM de la fan
+
+El proyecto reproducible, BOOT.BIN, XSA, IP AXI, overlay Device Tree, servicio y notas de validación están en [`hardware/fan-control-stage2/README.md`](hardware/fan-control-stage2/README.md). El repo incluye el Python actualizado con impulso de arranque al iniciar y al salir del estado apagado; ese último cambio todavía debe copiarse a la placa para quedar sincronizado con la versión publicada.
 
 ## Próximo proyecto guiado: ventilador y monitor en la AN970
 
@@ -116,7 +120,7 @@ La imagen original de PetaLinux 2020 y los proyectos Vivado 2023.2 se conservan 
 
 ## English summary
 
-This repository tracks AMD EDF bring-up and future Vivado 2026.2 experiments on an ALINX AXU3EG/AXU3EGB. The hardware bring-up that has actually been tested used **Vivado 2026.1** and the official **AMD EDF 26.06** image. Linux booted from microSD; UART console, four Cortex-A53 CPUs, 4 GiB installed DDR, PS GEM3 Ethernet/SSH, and temperature readings were observed. The fan was heard spinning, but its AA11 output is a fixed logic 0 with no PWM; the polarity/revision discrepancy still needs checking. The active PL design is minimal and does not contain the AN970 display, AN5641 camera path, or the full 2023.2 TRD peripherals. The AN970 has not yet been tested. Vivado/EDF 2026.2 support remains future work.
+This repository tracks AMD EDF bring-up and Vivado experiments for an ALINX AXU3EG/AXU3EGB. The tested bring-up used **Vivado 2026.1** and the official **AMD EDF 26.06** image. Linux booted from microSD; UART, four Cortex-A53 cores, 4 GiB installed DDR, PS GEM3 Ethernet/SSH, and SoC temperatures were observed. The PL contains an AXI PWM controller for the fan at `0xA0000000`. The BOOT.BIN and UIO overlay booted; systemd read temperatures and stopped the fan at about 29–30 °C. The software curve from 40 °C to 60 °C and the 30% minimum still need physical validation. The latest Python start-kick update is in the repository but has not yet been deployed to the board. The active PL design does not include the AN970 display, AN5641 camera path, or full 2023.2 TRD peripherals. Vivado/EDF 2026.2 remains future work.
 
 
 

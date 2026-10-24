@@ -14,6 +14,7 @@ Guías de instalación y uso, comprobaciones hechas en la placa, mapas de pines 
 - [AN970: pinout P4 ↔ J45 y plan de prueba](AN970_Pinout_y_Prueba.md)
 - [Plan de prueba progresiva para AN970](AN970_Plan_Prueba.md)
 - [Ventilador, sensores y monitor tipo htop](plan-control-fan-monitor.md)
+- [Proyecto completo fan PWM para EDF 26.06/Vivado 2026.1](../hardware/fan-control-stage2/README.md)
 - [Manual de usuario AXU3EGB publicado por ALINX](fuentes/alinx/AXU3EGB_User_Manual_ALINX.pdf)
 - [Índice Markdown de fuentes oficiales y notas de compatibilidad](fuentes/alinx/REFERENCIAS_ALINX.md)
 - [Guías Linux oficiales de ALINX: resumen, límites y enlaces](fuentes/alinx/GUIAS_LINUX_ALINX_REFERENCIAS.md)
@@ -23,7 +24,7 @@ Guías de instalación y uso, comprobaciones hechas en la placa, mapas de pines 
 
 La microSD arrancó AMD EDF 26.06 con hardware preparado usando Vivado 2026.1. Se confirmó consola UART, 4 Cortex-A53, 4 GB de DDR instalada (aprox. 3.8 GiB utilizables), Ethernet del PS y acceso SSH. Las temperaturas de AMD System Monitor son visibles en Linux. La eMMC se detectó, pero no se montó ni modificó.
 
-El bitstream que arrancó es una base PS mínima. No valida todavía LCD/táctil AN970, cámara AN5641, UART PL, RS485, Ethernet PL, DDR de PL ni el resto de periféricos. La documentación distingue mediciones reales de configuraciones todavía propuestas.
+El bitstream que arrancó es una base mínima del PS con PWM AXI para la fan en la PL. No valida todavía LCD/táctil AN970, cámara AN5641, UART PL, RS485, Ethernet PL, DDR de PL ni el resto de periféricos. La documentación distingue mediciones reales de configuraciones todavía propuestas.
 
 ## Notas de uso
 

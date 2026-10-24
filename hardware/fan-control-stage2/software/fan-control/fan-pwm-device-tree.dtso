@@ -1,0 +1,41 @@
+/dts-v1/;
+/plugin/;
+
+&fpga_full {
+
+        clocking0: clocking0 {
+                clocks = <&zynqmp_clk 0x47>;
+                clock-output-names = "fabric_clk";
+                #clock-cells = <0x0>;
+                assigned-clock-rates = <0x5f5dd19>;
+                assigned-clocks = <&zynqmp_clk 0x47>;
+                compatible = "xlnx,fclk";
+        };
+
+        afi0: afi0 {
+                config-afi = <0x0 0x0 0x1 0x0 0x2 0x0 0x3 0x0 0x4 0x0 0x5 0x0 0x6 0x0 0x7 0x0 0x8 0x0 0x9 0x0 0xa 0x0 0xb 0x0 0xc 0x0 0xd 0x0 0xe 0xa00 0xf 0x0>;
+                resets = <&zynqmp_reset 0x74>,
+                 <&zynqmp_reset 0x75>,
+                 <&zynqmp_reset 0x76>,
+                 <&zynqmp_reset 0x77>;
+                compatible = "xlnx,afi-fpga";
+        };
+};
+
+&amba {
+        #address-cells = <0x2>;
+        #size-cells = <0x2>;
+
+        axi_pwm_0: axi_pwm@a0000000 {
+                xlnx,name = "axi_pwm_0";
+                clocks = <&zynqmp_clk 0x47>;
+                reg = <0x0 0xa0000000 0x0 0x10000>;
+                xlnx,edk-iptype = "PERIPHERAL";
+                xlnx,ip-name = "axi_pwm";
+                xlnx,s00-axi-addr-width = <0x4>;
+                clock-names = "s00_axi_aclk";
+                compatible = "xlnx,axi-pwm-1.0";
+                xlnx,s00-axi-data-width = <0x20>;
+        };
+};
+
