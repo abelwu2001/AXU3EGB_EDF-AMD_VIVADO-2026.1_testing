@@ -44,23 +44,15 @@ La versión de la distribución EDF y la versión de Vivado son identificadores 
 
 Los pasos para instalar Vivado, preparar las fuentes EDF, grabar la microSD y hacer la primera comprobación están en [`INSTALLATION.md`](INSTALLATION.md). AMD no admite WSL como host de compilación para EDF 26.06; en WSL se validaron partes del entorno, pero no terminó una reconstrucción completa de Linux.
 
-## Primer periférico: pantalla táctil AN970
+## Primer periférico: pantalla AN970
 
-La AN970 es un módulo LCD táctil capacitivo de 7 pulgadas, resolución 800×480 y entrada RGB de 24 bits. ALINX documenta un experimento de pantalla AN970 para AXU3EG. La placa tiene encabezados de expansión de 40 pines; el conector P4 de la pantalla está pensado para conectarse a un encabezado ALINX compatible. La asignación final debe comprobarse contra el manual de la revisión exacta de la placa y el pin 1 antes de alimentar.
+La prueba de barras de color **ya se mostró físicamente** en la pantalla AN970 conectada a J45. El proyecto de referencia, la fuente Verilog, el XDC, el bitstream para JTAG y la foto están en [hardware/an970-colorbars/README.md](hardware/an970-colorbars/README.md).
 
-Secuencia propuesta:
+El resultado demuestra video RGB en esta configuración, compilada con Vivado 2026.1. El bitstream se cargó por JTAG: no se incorporó al BOOT.BIN de AMD EDF ni se hizo persistente en la microSD. El panel tiene táctil capacitivo GT911, pero todavía no se integró el I²C ni las señales de touch; esta prueba no lee toques.
 
-1. Crear una copia de trabajo del proyecto Vivado y revisar los tiempos RGB del manual AN970.
-2. Implementar y simular un generador de video 800×480 con barras de color y control del backlight.
-3. Ejecutar DRC, síntesis e implementación en la versión de Vivado seleccionada.
-4. Probar temporalmente el bitstream por JTAG con la placa apagada durante el cableado, conservando intacta la microSD de arranque conocida.
-5. Agregar y validar la entrada táctil I²C e interrupción.
-6. En una etapa posterior, conectar la salida de video con la cámara MIPI AN5641.
+La AN970 es de 800×480 y acepta entrada RGB. ALINX documenta modos de sincronización distintos; este prototipo mantiene HSYNC/VSYNC altos y ya dio imagen en la placa, pero sus tiempos y controles aún se deben comparar con el modo exacto del manual antes de usarlo como diseño final.
 
-**Estado de la AN970:** aún no probada en la placa. No hay un bitstream de barras de color ni soporte Linux/táctil listo en esta base.
-
-La documentación de ALINX también enumera una ruta de captura MIPI con el módulo de cámara AN5641. La compatibilidad del ejemplo con el hardware local y Vivado 2026.1/2026.2 debe verificarse antes de reutilizarlo.
-
+El siguiente objetivo es un panel tipo htop con carga/CPU, RAM, tráfico de red y temperaturas LPD/FPD/PL. Para desplegar una interfaz dinámica sobre la pantalla falta diseñar cómo Linux entregará los datos al renderizador de video.
 ## Otros módulos del kit
 
 Se identificaron los nombres AN9238, AN706, AN9767 y la cámara AN5641 como posibles pruebas futuras. Su interfaz, alimentación, asignación de pines y ejemplos de referencia se deben confirmar individualmente con el manual de cada módulo. Que el proyecto Vivado original tenga bloques relacionados no confirma que el módulo esté conectado o funcionando en el bitstream EDF actual.
