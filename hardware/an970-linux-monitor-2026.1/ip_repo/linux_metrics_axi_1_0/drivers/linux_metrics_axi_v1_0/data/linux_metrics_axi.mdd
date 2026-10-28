@@ -1,0 +1,11 @@
+
+
+OPTION psf_version = 2.1;
+
+BEGIN DRIVER linux_metrics_axi
+	OPTION supported_peripherals = (linux_metrics_axi);
+	OPTION copyfiles = all;
+	OPTION VERSION = 1.0;
+	OPTION NAME = linux_metrics_axi;
+END DRIVER
+

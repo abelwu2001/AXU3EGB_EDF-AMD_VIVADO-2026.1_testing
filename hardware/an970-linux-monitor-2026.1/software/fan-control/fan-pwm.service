@@ -1,0 +1,17 @@
+[Unit]
+Description=AXU3EGB temperature-controlled fan PWM
+After=local-fs.target
+Before=multi-user.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/local/sbin/fan-pwm-uio-setup.sh
+ExecStart=/usr/bin/python3 /usr/local/sbin/fan-pwm-control.py
+Restart=on-failure
+RestartSec=3
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
+

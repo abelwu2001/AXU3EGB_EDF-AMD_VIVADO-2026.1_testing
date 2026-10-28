@@ -1,0 +1,13 @@
+[Unit]
+Description=Load AN970 Linux monitor bitstream
+After=local-fs.target
+Before=fan-pwm.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "echo -n monitor.bit.bin > /sys/class/fpga_manager/fpga0/firmware"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+

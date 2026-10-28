@@ -1,0 +1,16 @@
+[Unit]
+Description=AXU3EGB Linux metrics publisher for AN970
+Requires=fan-pwm.service
+After=fan-pwm.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/sbin/linux-metrics-publish.py
+Restart=on-failure
+RestartSec=2
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
+
