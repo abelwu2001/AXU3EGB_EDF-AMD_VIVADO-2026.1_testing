@@ -33,6 +33,7 @@ El monitor horizontal y el control PWM se observaron funcionando en la placa. Vi
 ## Documentación
 
 - [Catálogo e historial de proyectos](docs/PROYECTOS.md)
+- [Chuleta de systemd: tareas, dependencias y modos de arranque](docs/COMANDOS_SYSTEMD_Y_ARRANQUE.md)
 - [Galería de avances](docs/avances/README.md)
 - [Manual del monitor combinado](hardware/an970-linux-monitor-2026.1/README.md)
 - [Manual del panel AN970 y pinout](docs/AN970_Pinout_y_Prueba.md)

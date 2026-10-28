@@ -13,6 +13,10 @@ Este repositorio conserva los avances como hitos separados y mantiene el diseño
 
 La galería conserva las capturas representativas de Vivado y fotos reales de cada salida de video. No publica volcados indiscriminados de terminal: esos podían incluir datos de acceso y no añaden evidencia visual al diseño.
 
+## Tareas Linux y modos de arranque
+
+La [chuleta de systemd](COMANDOS_SYSTEMD_Y_ARRANQUE.md) explica cómo crear servicios, priorizar su inicio y elegir entre fan automática o fan + monitor con métricas, tanto para la sesión actual como para el próximo reinicio.
+
 ## Preparación de EDF y Vivado
 
 - [Instalación y notas de Vivado/EDF](INSTALACION_EDF_VIVADO.md)

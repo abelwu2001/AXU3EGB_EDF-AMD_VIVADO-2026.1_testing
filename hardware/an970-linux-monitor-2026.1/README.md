@@ -90,3 +90,8 @@ Esperado: UIO map `0xA0000000` para PWM y `0xA0010000` para métricas; FPGA mana
 
 El proyecto de colorbars y el primer fan PWM se conservan como experiencias separadas en [`hardware/an970-colorbars`](../an970-colorbars/) y [`hardware/fan-control-stage2`](../fan-control-stage2/). El catálogo del repositorio enlaza estos hitos y la guía fotográfica.
 
+
+
+## Servicios systemd y selección del modo
+
+La guía detallada de [comandos systemd, dependencias y arranque](../../docs/COMANDOS_SYSTEMD_Y_ARRANQUE.md) explica cómo crear tareas, revisar prioridades, interpretar `After=`/`Requires=`/ `WantedBy=` y elegir fan sola o fan + pantalla con métricas al reinicio.
