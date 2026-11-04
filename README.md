@@ -32,6 +32,7 @@ El monitor horizontal y el control PWM se observaron funcionando en la placa. Vi
 
 ## Documentación
 
+- [Guía completa: creación de EDF, Vivado y puesta en marcha](docs/GUIA_COMPLETA_CREACION_EDF_AXU3EGB.md)
 - [Catálogo e historial de proyectos](docs/PROYECTOS.md)
 - [Chuleta de systemd: tareas, dependencias y modos de arranque](docs/COMANDOS_SYSTEMD_Y_ARRANQUE.md)
 - [Galería de avances](docs/avances/README.md)
@@ -43,4 +44,5 @@ El monitor horizontal y el control PWM se observaron funcionando en la placa. Vi
 - [Documentación ALINX](docs/fuentes/alinx/README_ALINX_AXU3EG_FAMILIA.md)
 
 Los proyectos guardan fuentes y artefactos útiles para reconstruir el diseño. Vivado regenera los productos derivados que no se versionan, como cachés y resultados completos de síntesis e implementación.
+
 
